@@ -37,13 +37,11 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// API Lấy tất cả các task
 app.get("/tasks", async (req, res) => {
-  const tasks = await Task.find().populate("userId", "fullName");
+  const tasks = await Task.find().populate("creatorId", "fullName");
   res.json(tasks);
 });
 
-// API Tạo Task
 app.post("/tasks", async (req, res) => {
   try {
     const { title, username, assignees } = req.body;
@@ -106,7 +104,7 @@ app.get("/tasks/user/:username", async (req, res) => {
       return res.status(404).json({ error: "User not found!" });
     }
 
-    const tasks = await Task.find({ userId: user._id });
+    const tasks = await Task.find({ creatorId: user._id });
     res.json(tasks);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -124,7 +122,7 @@ app.get("/tasks/today", async (req, res) => {
 
     const tasks = await Task.find({
       createdAt: { $gte: startOfDay, $lte: endOfDay },
-    }).populate("userId", "username");
+    }).populate("creatorId", "username");
 
     res.json(tasks);
   } catch (err) {
@@ -136,7 +134,7 @@ app.get("/tasks/today", async (req, res) => {
 app.get("/tasks/incomplete", async (req, res) => {
   try {
     const tasks = await Task.find({ isDone: false }).populate(
-      "userId",
+      "creatorId",
       "username",
     );
     res.json(tasks);
@@ -157,7 +155,7 @@ app.get("/tasks/:name", async (req, res) => {
     const users = await User.find({ fullName: { $regex: regex } });
     const userIds = users.map((u) => u._id);
 
-    const tasks = await Task.find({ userId: { $in: userIds } }).populate(
+    const tasks = await Task.find({ creatorId: { $in: userIds } }).populate(
       "userId",
     );
     res.json(tasks);
